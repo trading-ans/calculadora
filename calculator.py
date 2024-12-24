@@ -133,7 +133,10 @@ if modo == BURSATILES:
         with col1:
             st.write("")
             st.write("")
-            st.header(f"\t**{indice1['nombre']}**")
+            if indice1:
+                st.header(f"\t**{indice1['nombre']}**")
+            if indice2:
+                st.header(f"\t**{indice2['nombre']}**")
     
         with col2:
             cuenta = st.number_input("Tamaño de la cuenta", min_value=0.0,
