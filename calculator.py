@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 
+st.set_page_config("Calculadora Trading Ans", page_icon="./logo.jpg")
 st.logo("./logo.jpg", size="large", icon_image="./logo.jpg")
 st.title("Calculadora Trading Ans")
 
@@ -107,8 +108,8 @@ if modo == BURSATILES:
         {"nombre": "NZD/USD"}
     ]
     bursatiles = [
-        {"nombre": "US30"},
-        {"nombre": "US100"},
+        {"nombre": "US30 - Dow Jones"},
+        {"nombre": "US100 - NASDAQ"},
         {"nombre": "S&P500"}
     ]
     col1, col2 = st.columns(2)
@@ -127,17 +128,13 @@ if modo == BURSATILES:
                                help="Selecciona uno si vas a operar un índice bursátil.",
                                format_func=lambda a: a["nombre"])
     
-    if indice1 or indice2:
+    if indice := indice1 or indice2:
         st.divider()
         col1, col2 = st.columns(2)
         with col1:
             st.write("")
             st.write("")
-            if indice1:
-                st.header(f"\t**{indice1['nombre']}**")
-            if indice2:
-                st.header(f"\t**{indice2['nombre']}**")
-    
+            st.header(f"\t**{indice['nombre']}**")
         with col2:
             cuenta = st.number_input("Tamaño de la cuenta", min_value=0.0,
                                      help="Cuál es el tamaño de tu cuenta?",
