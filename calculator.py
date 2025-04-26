@@ -134,7 +134,10 @@ if modo == BURSATILES:
         with col1:
             st.write("")
             st.write("")
+            st.write("")
             st.header(f"\t**{indice['nombre']}**")
+            if indice in forex:
+                st.caption("Este par esta bajo proceso de revisión")
         with col2:
             cuenta = st.number_input("Tamaño de la cuenta", min_value=0.0,
                                      help="Cuál es el tamaño de tu cuenta?",
@@ -144,8 +147,26 @@ if modo == BURSATILES:
                                      help="Cuál es el tamaño de tu Stop Loss?",
                                      value=None,
                                      format="%.2f")
+            if indice == bursatiles[0]:
+                amd_toggle = st.toggle("Asistencia AMD")
+        
         st.divider()
+        if amd_toggle:
+            pips_sl = 40
+        
         if cuenta and cuenta > 0 and pips_sl and pips_sl > 0:
+            col1, col2 = st.columns(2)
+            with col1:
+                plataforma = st.pills("Lotaje recomendado a utilizar en", 
+                                        ["FTMO", "Doo Prime", "Otro"])
+            with col2:
+                if cuenta < 1001:
+                    st.write("")
+                    agresiva = st.toggle("Gestion agresiva")
+                else:
+                    agresiva = False
+                    st.write("")
+
             uno_porciento = cuenta * 0.01
             if indice1:
                 lot1 = uno_porciento / pips_sl / 10
@@ -154,12 +175,20 @@ if modo == BURSATILES:
             lot2 = lot1 / 2
             lot3 = lot1 / 3
 
-            st.markdown("<h5><u>Lotaje recomendado a utilizar</u></h5>",
-                        unsafe_allow_html=True)
-
-            if lot1 < 0.01:
-                st.write("Utilizar lotaje mínimo (0.01)")
-            
+            if plataforma == "Doo Prime":
+                lot1 = lot1/10
+                lot2 = lot2/10
+                lot3 = lot3/10
+                        
+            if agresiva:
+                lot1 = lot1*10
+                lot2 = lot2*10
+                lot3 = lot3*10
+                data = pd.DataFrame({
+                    "Arriesgar 10% de la cuenta": [f"{lot1:.2f}"],
+                    "Arriesgar 5% de la cuenta": [f"{lot2:.2f}"],
+                    "Arriesgar 3.3% de la cuenta": [f"{lot3:.2f}"]
+                })
             else:
                 data = pd.DataFrame(
                     {
@@ -169,10 +198,55 @@ if modo == BURSATILES:
                     }
                 )
 
-                s1 = dict(selector='th', props=[('text-align', 'center')])
-                s2 = dict(selector='td', props=[('text-align', 'center')])
-                s3 = dict(selector='td', props=[('width', '100vw')])
+            if lot1 < 0.01:
+                st.write("**Utilizar lotaje mínimo de 0.01**")
+            st.dataframe(data, hide_index=True, use_container_width=True, )
+            if plataforma == "Otro":
+                st.write("**Lo mejor sería revisar estos lotajes antes de operar.**")
 
-                # you can include more styling paramteres, check the pandas docs
-                table = data.style.set_table_styles([s1,s2,s3]).hide(axis=0).to_html()     
-                st.write(f'{table}', unsafe_allow_html=True)
+            if amd_toggle:
+                st.divider()
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.write("")
+                    st.write("")
+                    st.header(f"\t**Asistencia AMD**")
+                    st.caption("La estrategia utiliza :red[40 pips de SL] y :green[120 pips de TP].")
+                with col2:
+                    entrada = st.number_input("Punto de entrada", min_value=0.00,
+                                            help="Cuál es el punto de entrada?",
+                                            value=None,
+                                            format="%.2f")
+                    operacion = st.selectbox("Tipo de operación", ["Compras", "Ventas"],
+                                            help="Tipo de operación.",
+                                            placeholder="Compras o ventas",
+                                            index=None)
+                    sl, tp, tp2 = (0,0,0)
+                    if operacion == "Ventas":
+                        tp = entrada - 120
+                        tp2 = entrada - 400
+                        sl = entrada + 40
+                    if operacion == "Compras":
+                        tp = entrada + 120
+                        tp2 = entrada + 400
+                        sl = entrada - 40
+
+                if operacion is not None and entrada is not None: 
+                    st.write("")
+                    st.write("")
+                    st.write(f"""
+                        Utiliza los siguientes datos para tu operación de AMD en **{operacion}**:
+                        * **:red[SL]**: {sl}
+                        * **:green[TP]**: {tp}
+                        * **:green[TP 1:10]**: {tp2} _(Este en caso de que operes AMD 2.0)_
+
+                        Selecciona, copia y pega en tu MetaTrader. 
+                        
+                        **Recordá:** Si utilizás varios MetaTrader, el punto de entrada puede variar y sea necesario repetir el cálculo.
+                    """)
+
+                    
+                
+                    
+
+
