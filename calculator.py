@@ -149,6 +149,8 @@ if modo == BURSATILES:
                                      format="%.2f")
             if indice == bursatiles[0]:
                 amd_toggle = st.toggle("Asistencia AMD")
+            else:
+                amd_toggle = False
         
         st.divider()
         if amd_toggle:
