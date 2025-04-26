@@ -1,9 +1,40 @@
 import streamlit as st
 import pandas as pd
+from streamlit_js_eval import streamlit_js_eval
 
 st.set_page_config("Calculadora Trading Ans", page_icon="./logo.jpg")
 st.logo("./logo.jpg", size="large", icon_image="./logo.jpg")
 st.title("Calculadora Trading Ans")
+
+if 'screen_width' not in st.session_state:
+    returned_width = streamlit_js_eval(js_expressions='screen.width', key='WIDTH')
+    st.write(returned_width)
+    if returned_width is not None:
+        st.session_state['screen_width'] = returned_width
+        st.rerun() 
+
+def display_lotajes(data):  
+    if st.session_state['screen_width']:
+        try:
+            screen_width = int( st.session_state['screen_width'])
+            phone_width_threshold = 768
+            if screen_width < phone_width_threshold:
+                st.dataframe(data.T, use_container_width=True,
+                             column_config={
+                                "": st.column_config.Column(
+                                    "Riesgo"
+                                ),
+                                "0": st.column_config.Column(
+                                    "Lotaje"
+                                ),
+                            })
+            else:
+                st.dataframe(data, hide_index=True, use_container_width=True)
+        except ValueError:
+            st.dataframe(data, hide_index=True, use_container_width=True)
+    else:
+        st.dataframe(data, hide_index=True, use_container_width=True)
+
 
 SINTETICOS = "Índices sintéticos"
 BURSATILES = "Forex y bursátiles"
@@ -75,8 +106,9 @@ if modo == SINTETICOS:
             lot2 = lot1 / 2
             lot3 = lot1 / 3
 
-            st.markdown("<h5><u>Lotaje recomendado a utilizar</u></h5>", unsafe_allow_html=True)
 
+            st.write("Lotaje recomendado a utilizar")
+            
             if lot1 < indice["min"]:
                 st.write("Utilizar lotaje mínimo.")
             
@@ -88,14 +120,7 @@ if modo == SINTETICOS:
                     "Arriesgar 0.33% de la cuenta": [f"{lot3:.2f}"]
                     }
                 )
-
-                s1 = dict(selector='th', props=[('text-align', 'center')])
-                s2 = dict(selector='td', props=[('text-align', 'center')])
-                s3 = dict(selector='td', props=[('width', '100vw')])
-
-                # you can include more styling paramteres, check the pandas docs
-                table = data.style.set_table_styles([s1,s2,s3]).hide(axis=0).to_html()     
-                st.write(f'{table}', unsafe_allow_html=True)
+                display_lotajes(data)
 
 if modo == BURSATILES:
     forex = [
@@ -202,7 +227,8 @@ if modo == BURSATILES:
 
             if lot1 < 0.01:
                 st.write("**Utilizar lotaje mínimo de 0.01**")
-            st.dataframe(data, hide_index=True, use_container_width=True, )
+            else:
+                display_lotajes(data)
             if plataforma == "Otro":
                 st.write("**Lo mejor sería revisar estos lotajes antes de operar.**")
 
@@ -240,15 +266,10 @@ if modo == BURSATILES:
                         Utiliza los siguientes datos para tu operación de AMD en **{operacion}**:
                         * **:red[SL]**: {sl}
                         * **:green[TP]**: {tp}
-                        * **:green[TP 1:10]**: {tp2} _(Este en caso de que operes AMD 2.0)_
+                        * **:green[TP 1:10]**: {tp2} _(Para AMD 2.0)_
 
                         Selecciona, copia y pega en tu MetaTrader. 
                         
                         **Recordá:** Si utilizás varios MetaTrader, el punto de entrada puede variar y sea necesario repetir el cálculo.
                     """)
-
-                    
-                
-                    
-
 
