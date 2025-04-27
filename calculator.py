@@ -2,9 +2,16 @@ import streamlit as st
 import pandas as pd
 from streamlit_js_eval import streamlit_js_eval
 
-st.set_page_config("Calculadora Trading Ans", page_icon="./logo.jpg")
+st.set_page_config(page_title="Calculadora Trading Ans", page_icon="./logo.jpg")
 st.logo("./logo.jpg", size="large", icon_image="./logo.jpg")
 st.title("Calculadora Trading Ans")
+
+st.markdown(
+    """
+    <link rel="manifest" href="/manifest.json">
+    """,
+    unsafe_allow_html=True,
+)
 
 if 'screen_width' not in st.session_state:
     returned_width = streamlit_js_eval(js_expressions='screen.width', key='WIDTH')
